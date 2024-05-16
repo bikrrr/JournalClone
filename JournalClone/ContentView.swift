@@ -8,76 +8,64 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var titleOpacity: Double = 0
-    @State private var settingsOpacity: Double = 0
+    @State private var toolbarOpacity: Double = 0
+
+    let fadeInThreshold: CGFloat = 70
+    static let appBackgroundColor = Color(red: 248/255, green: 244/255, blue: 244/255)
 
     var body: some View {
-        GeometryReader { _ in
-            NavigationStack {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        HStack {
-                            Text("Journal")
-                                .font(.largeTitle)
-                                .bold()
-                                .background(GeometryReader { geo in
-                                    Color.clear
-                                        .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
-                                })
-                            Spacer()
-                            settingsButton
-                                .background(GeometryReader { geo in
-                                    Color.clear
-                                        .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
-                                })
-                        }
-                        .padding(.vertical)
-
-                        ForEach(1 ..< 42) { index in
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(UIColor.systemBackground))
-                                .frame(height: 88)
-                                .overlay(
-                                    HStack {
-                                        Text("Item \(index)")
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                )
-                                .padding(.horizontal, 0)
-                                .padding(.vertical, 10)
-                                .shadow(color: Color.black.opacity(0.1), radius: 12)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .onPreferenceChange(ViewOffsetKey.self) { value in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        let fadeInStart: CGFloat = 70 // Start fading in earlier
-
-                        if value < fadeInStart {
-                            titleOpacity = 1
-                            settingsOpacity = 1
-                        } else {
-                            titleOpacity = 0
-                            settingsOpacity = 0
-                        }
-                    }
-                }
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    HStack {
                         Text("Journal")
+                            .font(.largeTitle)
                             .bold()
-                            .opacity(titleOpacity)
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Spacer()
                         settingsButton
-                            .opacity(settingsOpacity)
+                            .background(GeometryReader { geo in
+                                Color.clear
+                                    .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
+                            })
+                    }
+                    .padding(.vertical)
+
+                    ForEach(1 ..< 42) { index in
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color(UIColor.systemBackground))
+                            .frame(height: 88)
+                            .overlay(
+                                HStack {
+                                    Text("Item \(index)")
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                            )
+                            .padding(.horizontal, 0)
+                            .padding(.vertical, 10)
+                            .shadow(color: Color.black.opacity(0.1), radius: 12)
                     }
                 }
-                .navigationBarBackButtonHidden()
-                .background(Color(red: 248/255, green: 244/255, blue: 244/255).edgesIgnoringSafeArea(.all))
+                .padding(.horizontal)
             }
+            .onPreferenceChange(ViewOffsetKey.self) { value in
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    toolbarOpacity = value < fadeInThreshold ? 1 : 0
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Journal")
+                        .bold()
+                        .opacity(toolbarOpacity)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    settingsButton
+                        .opacity(toolbarOpacity)
+                }
+            }
+            .navigationBarBackButtonHidden()
+            .background(Self.appBackgroundColor.edgesIgnoringSafeArea(.all))
         }
     }
 
