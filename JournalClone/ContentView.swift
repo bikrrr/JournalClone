@@ -10,8 +10,10 @@ import SwiftUI
 struct ContentView: View {
     @State private var toolbarOpacity: Double = 0
 
-    let fadeInThreshold: CGFloat = 70
-    static let appBackgroundColor = Color(red: 248/255, green: 244/255, blue: 244/255)
+    let fadeThreshold: CGFloat = 70
+
+    static let appBackground = Color(red: 248/255, green: 244/255, blue: 244/255)
+    static let cardBackground = Color(UIColor.systemBackground)
 
     var body: some View {
         NavigationStack {
@@ -23,16 +25,13 @@ struct ContentView: View {
                             .bold()
                         Spacer()
                         settingsButton
-                            .background(GeometryReader { geo in
-                                Color.clear
-                                    .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
-                            })
+                            .background(OffsetObserver())
                     }
                     .padding(.vertical)
 
                     ForEach(1 ..< 42) { index in
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(UIColor.systemBackground))
+                            .fill(Self.cardBackground)
                             .frame(height: 88)
                             .overlay(
                                 HStack {
@@ -41,7 +40,6 @@ struct ContentView: View {
                                 }
                                 .padding(.horizontal, 16)
                             )
-                            .padding(.horizontal, 0)
                             .padding(.vertical, 10)
                             .shadow(color: Color.black.opacity(0.1), radius: 12)
                     }
@@ -50,7 +48,7 @@ struct ContentView: View {
             }
             .onPreferenceChange(ViewOffsetKey.self) { value in
                 withAnimation(.easeInOut(duration: 0.1)) {
-                    toolbarOpacity = value < fadeInThreshold ? 1 : 0
+                    toolbarOpacity = value < fadeThreshold ? 1 : 0
                 }
             }
             .toolbar {
@@ -65,7 +63,7 @@ struct ContentView: View {
                 }
             }
             .navigationBarBackButtonHidden()
-            .background(Self.appBackgroundColor.edgesIgnoringSafeArea(.all))
+            .background(Self.appBackground.edgesIgnoringSafeArea(.all))
         }
     }
 
@@ -78,6 +76,15 @@ struct ContentView: View {
                 .foregroundColor(Color(UIColor.label))
                 .padding(7)
                 .background(Circle().fill(Color(UIColor.secondarySystemFill)))
+        }
+    }
+}
+
+struct OffsetObserver: View {
+    var body: some View {
+        GeometryReader { geo in
+            Color.clear
+                .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
         }
     }
 }
