@@ -8,26 +8,32 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var bottomOfRect: CGFloat = 0
-    let offset: CGFloat = 98
+    @State private var titleOpacity: Double = 0
+    @State private var settingsOpacity: Double = 0
 
     var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
+        GeometryReader { _ in
+            NavigationStack {
                 ScrollView {
                     VStack(spacing: 0) {
                         HStack {
                             Text("Journal")
                                 .font(.largeTitle)
                                 .bold()
+                                .background(GeometryReader { geo in
+                                    Color.clear
+                                        .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
+                                })
                             Spacer()
                             settingsButton
+                                .background(GeometryReader { geo in
+                                    Color.clear
+                                        .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
+                                })
                         }
-                        .onChange(of: geometry.frame(in: .global).minY) { _, newValue in
-                            bottomOfRect = newValue
-                        }
+                        .padding(.vertical)
 
-                        ForEach(1..<42) { index in
+                        ForEach(1 ..< 42) { index in
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color(UIColor.systemBackground))
                                 .frame(height: 88)
@@ -45,50 +51,54 @@ struct ContentView: View {
                     }
                     .padding(.horizontal)
                 }
+                .onPreferenceChange(ViewOffsetKey.self) { value in
+                    withAnimation(.easeInOut(duration: 0.1)) {
+                        let fadeInStart: CGFloat = 70 // Start fading in earlier
+
+                        if value < fadeInStart {
+                            titleOpacity = 1
+                            settingsOpacity = 1
+                        } else {
+                            titleOpacity = 0
+                            settingsOpacity = 0
+                        }
+                    }
+                }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Text("Journal")
                             .bold()
-                            .opacity(computeOpacity())
+                            .opacity(titleOpacity)
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         settingsButton
-                            .opacity(computeOpacity())
+                            .opacity(settingsOpacity)
                     }
                 }
                 .navigationBarBackButtonHidden()
-                .background(Color(red: 248/255, green: 244/255, blue: 244/255))
+                .background(Color(red: 248/255, green: 244/255, blue: 244/255).edgesIgnoringSafeArea(.all))
             }
         }
     }
 
-    private func computeOpacity() -> Double {
-        let transitionRange: CGFloat = 40 // The range over which the opacity changes
-        let transitionStart = offset - 20 // Start fading when bottomOfRect reaches this value
-        let transitionEnd = offset + transitionRange // End fading when bottomOfRect reaches this value
-
-        // Calculate opacity based on current scroll position
-        if bottomOfRect <= transitionStart {
-            return 1.0
-        } else if bottomOfRect >= transitionEnd {
-            return 0.0
-        } else {
-            // Linear interpolation between 1 and 0
-            return Double(1 - (bottomOfRect - transitionStart) / transitionRange)
-        }
-    }
-
     private var settingsButton: some View {
-        Button(action: {print("Button tapped") } ) {
+        Button(action: { print("Button tapped") }) {
             Image(systemName: "line.3.horizontal.decrease")
-                .resizable() // Makes the image resizable
-                .aspectRatio(contentMode: .fit) // Maintains the aspect ratio
-                .frame(width: 18, height: 18) // Sets the precise size of the image
-                .bold()
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 18, height: 18)
                 .foregroundColor(Color(UIColor.label))
-                .padding([.horizontal, .vertical], 7)
+                .padding(7)
                 .background(Circle().fill(Color(UIColor.secondarySystemFill)))
         }
+    }
+}
+
+struct ViewOffsetKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
