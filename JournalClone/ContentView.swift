@@ -14,13 +14,15 @@ struct ContentView: View {
 
     static let appBackground = Color(red: 248/255, green: 244/255, blue: 244/255)
     static let cardBackground = Color(UIColor.systemBackground)
+    static let cardShadow = Color(red: 25/255, green: 12/255, blue: 12/255)
+    static let appName = "Journal Clone"
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
                     HStack {
-                        Text("Journal")
+                        Text(Self.appName)
                             .font(.largeTitle)
                             .bold()
                         Spacer()
@@ -30,19 +32,9 @@ struct ContentView: View {
                     .padding(.vertical)
 
                     ForEach(1 ..< 42) { index in
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Self.cardBackground)
-                            .frame(height: 88)
-                            .overlay(
-                                HStack {
-                                    Text("Item \(index)")
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 16)
-                            )
-                            .padding(.vertical, 10)
-                            .shadow(color: Color.black.opacity(0.1), radius: 12)
+                        CardView(index: index)
                     }
+                    .padding(.horizontal, 3)
                 }
                 .padding(.horizontal)
             }
@@ -53,7 +45,7 @@ struct ContentView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Journal")
+                    Text(Self.appName)
                         .bold()
                         .opacity(toolbarOpacity)
                 }
@@ -86,6 +78,47 @@ struct OffsetObserver: View {
             Color.clear
                 .preference(key: ViewOffsetKey.self, value: geo.frame(in: .global).minY)
         }
+    }
+}
+
+struct CardView: View {
+    var index: Int
+
+    var body: some View {
+        VStack {
+            VStack {
+                HStack {
+                    Text("Item \(index)")
+                    Spacer()
+                }
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+                Divider()
+                    .padding(.horizontal, -12)
+                    .background(.tertiary)
+
+                HStack {
+                    Text("Thursday, May 16")
+                        .font(.caption)
+                        .padding(.vertical, 0)
+                    Spacer()
+                    Image(systemName: "ellipsis")
+                }
+                .bold()
+                .padding(.top, 2)
+                .padding(.bottom, 8)
+                .foregroundStyle(.secondary)
+
+            }
+            .frame(height: 88)
+            .padding(.horizontal, 16)
+            .background(ContentView.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: ContentView.cardShadow.opacity(0.15), radius: 12)
+
+        }
+        .padding(.vertical, 10)
     }
 }
 
