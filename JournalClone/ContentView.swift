@@ -63,6 +63,7 @@ struct ContentView: View {
         Button(action: { print("Button tapped") }) {
             Image(systemName: "line.3.horizontal.decrease")
                 .resizable()
+                .bold()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 18, height: 18)
                 .foregroundColor(Color(UIColor.label))
